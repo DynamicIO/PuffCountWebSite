@@ -7,6 +7,11 @@ function Header({ tabs, activeTab, setActiveTab, theme, toggleTheme }) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleTabClick = (tabId) => {
+    setActiveTab(tabId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <header className="header">
       <div className="header-content">
@@ -23,7 +28,7 @@ function Header({ tabs, activeTab, setActiveTab, theme, toggleTheme }) {
             <button
               key={tab.id}
               className={`nav-tab ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabClick(tab.id)}
             >
               <span className="nav-tab-emoji">{tab.emoji}</span>
               <span className="nav-tab-text">{tab.label}</span>
