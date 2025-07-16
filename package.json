@@ -1,0 +1,34 @@
+{
+  "name": "puff-tracker-website",
+  "version": "1.0.0",
+  "description": "A comprehensive web application for tracking daily puff consumption with analytics and goal setting",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-calendar": "^4.6.0",
+    "chart.js": "^4.4.0",
+    "react-chartjs-2": "^5.2.0",
+    "lucide-react": "^0.263.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.3",
+    "vite": "^4.4.5"
+  },
+  "keywords": [
+    "puff",
+    "tracker",
+    "health",
+    "analytics",
+    "react",
+    "web-app"
+  ],
+  "author": "",
+  "license": "MIT"
+} 
