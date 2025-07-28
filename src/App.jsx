@@ -52,7 +52,31 @@ function App() {
 
   const getTodayCount = () => {
     const today = getTodayString();
-    return puffData[today] || 0;
+    const todayData = puffData[today];
+    if (!todayData) return 0;
+    
+    // Handle both old format (number) and new format (array of timestamps)
+    if (typeof todayData === 'number') {
+      return todayData;
+    }
+    return todayData.length || 0;
+  };
+
+  const getTodayPuffs = () => {
+    const today = getTodayString();
+    const todayData = puffData[today];
+    if (!todayData) return [];
+    
+    // Handle both old format (number) and new format (array of timestamps)
+    if (typeof todayData === 'number') {
+      // Convert old format to new format
+      const timestamps = [];
+      for (let i = 0; i < todayData; i++) {
+        timestamps.push(new Date().toISOString());
+      }
+      return timestamps;
+    }
+    return todayData;
   };
 
   const updatePuffCount = (date, count) => {
@@ -68,20 +92,100 @@ function App() {
     });
   };
 
+  const addPuff = (date = getTodayString()) => {
+    console.log('addPuff called with date:', date);
+    const timestamp = new Date().toISOString();
+    
+    setPuffData(prev => {
+      const existingData = prev[date];
+      let newPuffs;
+      
+      if (!existingData) {
+        // No data for this date, create new array
+        newPuffs = [timestamp];
+      } else if (typeof existingData === 'number') {
+        // Convert old format to new format
+        newPuffs = Array(existingData).fill().map(() => new Date().toISOString());
+        newPuffs.push(timestamp);
+      } else {
+        // Already in new format, add to existing array
+        newPuffs = [...existingData, timestamp];
+      }
+      
+      const newData = {
+        ...prev,
+        [date]: newPuffs
+      };
+      console.log('New puffData after adding puff:', newData);
+      return newData;
+    });
+  };
+
+  const removePuff = (date = getTodayString()) => {
+    console.log('removePuff called with date:', date);
+    
+    setPuffData(prev => {
+      const existingData = prev[date];
+      if (!existingData) return prev;
+      
+      let newPuffs;
+      if (typeof existingData === 'number') {
+        // Convert old format to new format
+        if (existingData <= 0) return prev;
+        newPuffs = Array(existingData - 1).fill().map(() => new Date().toISOString());
+      } else {
+        // Already in new format, remove last puff
+        if (existingData.length <= 0) return prev;
+        newPuffs = existingData.slice(0, -1);
+      }
+      
+      const newData = {
+        ...prev,
+        [date]: newPuffs
+      };
+      console.log('New puffData after removing puff:', newData);
+      return newData;
+    });
+  };
+
+  const removePuffAtIndex = (index, date = getTodayString()) => {
+    console.log('removePuffAtIndex called with index:', index, 'date:', date);
+    
+    setPuffData(prev => {
+      const existingData = prev[date];
+      if (!existingData) return prev;
+      
+      let newPuffs;
+      if (typeof existingData === 'number') {
+        // Convert old format to new format first
+        newPuffs = Array(existingData).fill().map(() => new Date().toISOString());
+      } else {
+        newPuffs = [...existingData];
+      }
+      
+      // Remove the puff at the specified index
+      if (index >= 0 && index < newPuffs.length) {
+        newPuffs.splice(index, 1);
+      }
+      
+      const newData = {
+        ...prev,
+        [date]: newPuffs
+      };
+      console.log('New puffData after removing puff at index:', newData);
+      return newData;
+    });
+  };
+
+  // Keep the old functions for backward compatibility
   const incrementPuff = (date = getTodayString()) => {
     console.log('incrementPuff called with date:', date);
-    const currentCount = puffData[date] || 0;
-    console.log('Current count before increment:', currentCount);
-    updatePuffCount(date, currentCount + 1);
-    console.log('New count should be:', currentCount + 1);
+    addPuff(date);
   };
 
   const decrementPuff = (date = getTodayString()) => {
     console.log('decrementPuff called with date:', date);
-    const currentCount = puffData[date] || 0;
-    console.log('Current count before decrement:', currentCount);
-    updatePuffCount(date, Math.max(0, currentCount - 1));
-    console.log('New count should be:', Math.max(0, currentCount - 1));
+    removePuff(date);
   };
 
   const resetAllData = () => {
@@ -96,8 +200,12 @@ function App() {
       costPerUnit,
       achievements,
       getTodayCount,
+      getTodayPuffs,
       incrementPuff,
       decrementPuff,
+      addPuff,
+      removePuff,
+      removePuffAtIndex,
       updatePuffCount
     };
 

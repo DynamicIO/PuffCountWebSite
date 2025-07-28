@@ -10,16 +10,16 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-calendar": "^4.6.0",
     "chart.js": "^4.4.0",
+    "lucide-react": "^0.263.1",
+    "react": "^18.2.0",
+    "react-calendar": "^4.6.0",
     "react-chartjs-2": "^5.2.0",
-    "lucide-react": "^0.263.1"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.3",
-    "vite": "^4.4.5"
+    "vite": "^7.0.6"
   },
   "keywords": [
     "puff",
@@ -31,4 +31,4 @@
   ],
   "author": "",
   "license": "MIT"
-} 
+}

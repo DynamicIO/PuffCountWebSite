@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Calendar from 'react-calendar';
 import { Plus, Minus } from 'lucide-react';
+import PuffHistory from './PuffHistory';
 import 'react-calendar/dist/Calendar.css';
 import './CalendarTab.css';
 
@@ -8,7 +9,9 @@ function CalendarTab({
   puffData, 
   dailyGoal, 
   costPerUnit, 
-  updatePuffCount 
+  updatePuffCount,
+  getTodayPuffs,
+  removePuffAtIndex
 }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
 
@@ -16,12 +19,40 @@ function CalendarTab({
     return date.toISOString().split('T')[0];
   };
 
+  // Helper function to get count from data (handles both old and new formats)
+  const getCountFromData = (data) => {
+    if (!data) return 0;
+    if (typeof data === 'number') return data;
+    if (Array.isArray(data)) return data.length;
+    return 0;
+  };
+
   const selectedDateString = formatDateString(selectedDate);
-  const selectedCount = puffData[selectedDateString] || 0;
+  const selectedCount = getCountFromData(puffData[selectedDateString]);
+
+  // Get puffs for the selected date
+  const getPuffsForDate = (date) => {
+    const dateString = formatDateString(date);
+    const dateData = puffData[dateString];
+    if (!dateData) return [];
+    
+    // Handle both old format (number) and new format (array of timestamps)
+    if (typeof dateData === 'number') {
+      // Convert old format to new format
+      const timestamps = [];
+      for (let i = 0; i < dateData; i++) {
+        timestamps.push(new Date(date).toISOString());
+      }
+      return timestamps;
+    }
+    return dateData;
+  };
+
+  const selectedDatePuffs = getPuffsForDate(selectedDate);
 
   const getDateClass = (date) => {
     const dateString = formatDateString(date);
-    const count = puffData[dateString] || 0;
+    const count = getCountFromData(puffData[dateString]);
     
     if (count === 0) return '';
     
@@ -33,7 +64,7 @@ function CalendarTab({
   const getTileContent = ({ date, view }) => {
     if (view === 'month') {
       const dateString = formatDateString(date);
-      const count = puffData[dateString] || 0;
+      const count = getCountFromData(puffData[dateString]);
       
       if (count > 0) {
         return (
@@ -52,6 +83,12 @@ function CalendarTab({
 
   const decrementCount = () => {
     updatePuffCount(selectedDateString, Math.max(0, selectedCount - 1));
+  };
+
+  const removePuffAtIndexForDate = (index) => {
+    if (removePuffAtIndex) {
+      removePuffAtIndex(index, selectedDateString);
+    }
   };
 
   const getSelectedDateInfo = () => {
@@ -190,6 +227,15 @@ function CalendarTab({
               )}
             </div>
           </div>
+        </div>
+
+        {/* Puff History for Selected Date */}
+        <div className="mt-6">
+          <PuffHistory 
+            todayPuffs={selectedDatePuffs}
+            removePuffAtIndex={removePuffAtIndexForDate}
+            selectedDate={selectedDate}
+          />
         </div>
       </div>
     </div>

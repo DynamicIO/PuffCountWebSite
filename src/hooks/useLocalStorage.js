@@ -5,7 +5,24 @@ export function useLocalStorage(key, initialValue) {
   const [storedValue, setStoredValue] = useState(() => {
     try {
       const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
+      if (item === null) {
+        return initialValue;
+      }
+      
+      // Try to parse as JSON first
+      try {
+        return JSON.parse(item);
+      } catch (parseError) {
+        // If JSON parsing fails, check if it's a simple string value
+        // This handles cases where the value might have been stored as a plain string
+        if (typeof initialValue === 'string') {
+          // If the initial value is a string, return the raw item as a string
+          return item;
+        }
+        // For other types, return the initial value
+        console.warn(`Invalid JSON in localStorage key "${key}", using initial value:`, parseError);
+        return initialValue;
+      }
     } catch (error) {
       console.error(`Error reading localStorage key "${key}":`, error);
       return initialValue;
@@ -36,13 +53,15 @@ export function useLocalStorage(key, initialValue) {
           setStoredValue(JSON.parse(e.newValue));
         } catch (error) {
           console.error(`Error parsing localStorage key "${key}":`, error);
+          // Fall back to initial value if parsing fails
+          setStoredValue(initialValue);
         }
       }
     };
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [key]);
+  }, [key, initialValue]);
 
   return [storedValue, setValue];
 } 

@@ -10,7 +10,7 @@ function DashboardTab({
   costPerUnit, 
   getTodayCount, 
   incrementPuff, 
-  decrementPuff 
+  decrementPuff
 }) {
   const todayCount = getTodayCount();
   const stats = calculateStats(puffData, dailyGoal, costPerUnit);
@@ -161,6 +161,8 @@ function DashboardTab({
             </div>
           </div>
         </div>
+
+
       </div>
     </div>
   );

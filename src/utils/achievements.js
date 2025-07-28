@@ -6,7 +6,7 @@ export const ACHIEVEMENTS = {
     description: 'Log your first puff',
     emoji: '👶',
     condition: (puffData) => {
-      return Object.values(puffData).some(count => count > 0);
+      return Object.values(puffData).some(data => getCountFromData(data) > 0);
     }
   },
   goalCrusher: {
@@ -16,7 +16,7 @@ export const ACHIEVEMENTS = {
     emoji: '🎯',
     condition: (puffData, dailyGoal) => {
       const today = new Date().toISOString().split('T')[0];
-      const todayCount = puffData[today] || 0;
+      const todayCount = getCountFromData(puffData[today] || 0);
       return todayCount > 0 && todayCount <= dailyGoal;
     }
   },
@@ -59,6 +59,14 @@ export const ACHIEVEMENTS = {
   }
 };
 
+// Helper function to get count from data (handles both old and new formats)
+function getCountFromData(data) {
+  if (!data) return 0;
+  if (typeof data === 'number') return data;
+  if (Array.isArray(data)) return data.length;
+  return 0;
+}
+
 // Helper function to check streak
 function checkStreak(puffData, dailyGoal, streakLength) {
   const dates = [];
@@ -73,7 +81,7 @@ function checkStreak(puffData, dailyGoal, streakLength) {
   
   // Check if all days in the streak meet the goal
   return dates.every(date => {
-    const count = puffData[date] || 0;
+    const count = getCountFromData(puffData[date]);
     return count > 0 && count <= dailyGoal;
   });
 }
@@ -82,7 +90,8 @@ function checkStreak(puffData, dailyGoal, streakLength) {
 function calculateTotalSavings(puffData, dailyGoal, costPerUnit) {
   let totalSaved = 0;
   
-  Object.entries(puffData).forEach(([date, count]) => {
+  Object.entries(puffData).forEach(([date, data]) => {
+    const count = getCountFromData(data);
     if (count <= dailyGoal) {
       const saved = Math.max(0, dailyGoal - count);
       totalSaved += saved * costPerUnit;
@@ -121,7 +130,7 @@ export function getAchievementProgress(achievementId, puffData, dailyGoal, costP
   
   switch (achievementId) {
     case 'firstStep':
-      const hasAnyPuffs = Object.values(puffData).some(count => count > 0);
+      const hasAnyPuffs = Object.values(puffData).some(data => getCountFromData(data) > 0);
       return {
         current: hasAnyPuffs ? 1 : 0,
         target: 1,
@@ -130,7 +139,7 @@ export function getAchievementProgress(achievementId, puffData, dailyGoal, costP
       
     case 'goalCrusher':
       const today = new Date().toISOString().split('T')[0];
-      const todayCount = puffData[today] || 0;
+      const todayCount = getCountFromData(puffData[today] || 0);
       const metGoal = todayCount > 0 && todayCount <= dailyGoal;
       return {
         current: metGoal ? 1 : 0,
@@ -173,7 +182,7 @@ function getCurrentStreak(puffData, dailyGoal) {
     date.setDate(date.getDate() - i);
     const dateString = date.toISOString().split('T')[0];
     
-    const count = puffData[dateString] || 0;
+    const count = getCountFromData(puffData[dateString] || 0);
     if (count > 0 && count <= dailyGoal) {
       streak++;
     } else if (count > 0) {
@@ -203,18 +212,18 @@ export function calculateStats(puffData, dailyGoal, costPerUnit) {
     };
   }
   
-  const totalPuffs = Object.values(puffData).reduce((sum, count) => sum + count, 0);
+  const totalPuffs = Object.values(puffData).reduce((sum, data) => sum + getCountFromData(data), 0);
   const totalDays = dates.length;
   const dailyAverage = totalPuffs / totalDays;
   
   // Weekly average (last 7 days)
   const last7Days = dates.slice(-7);
-  const weeklyTotal = last7Days.reduce((sum, date) => sum + (puffData[date] || 0), 0);
+  const weeklyTotal = last7Days.reduce((sum, date) => sum + getCountFromData(puffData[date] || 0), 0);
   const weeklyAverage = last7Days.length > 0 ? weeklyTotal / last7Days.length : 0;
   
   // Monthly average (last 30 days)
   const last30Days = dates.slice(-30);
-  const monthlyTotal = last30Days.reduce((sum, date) => sum + (puffData[date] || 0), 0);
+  const monthlyTotal = last30Days.reduce((sum, date) => sum + getCountFromData(puffData[date] || 0), 0);
   const monthlyAverage = last30Days.length > 0 ? monthlyTotal / last30Days.length : 0;
   
   const totalCost = totalPuffs * costPerUnit;
@@ -226,7 +235,7 @@ export function calculateStats(puffData, dailyGoal, costPerUnit) {
   let tempStreak = 0;
   
   dates.forEach(date => {
-    const count = puffData[date] || 0;
+    const count = getCountFromData(puffData[date] || 0);
     if (count > 0 && count <= dailyGoal) {
       tempStreak++;
       longestStreak = Math.max(longestStreak, tempStreak);

@@ -25,6 +25,14 @@ function ReportsTab({ puffData, dailyGoal, costPerUnit }) {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
 
+  // Helper function to get count from data (handles both old and new formats)
+  const getCountFromData = (data) => {
+    if (!data) return 0;
+    if (typeof data === 'number') return data;
+    if (Array.isArray(data)) return data.length;
+    return 0;
+  };
+
   // Generate month data
   const monthData = useMemo(() => {
     const year = selectedYear;
@@ -43,7 +51,7 @@ function ReportsTab({ puffData, dailyGoal, costPerUnit }) {
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
       const dateString = date.toISOString().split('T')[0];
-      const count = puffData[dateString] || 0;
+      const count = getCountFromData(puffData[dateString]);
       
       if (count > 0) {
         daysWithData++;
